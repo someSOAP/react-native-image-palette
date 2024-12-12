@@ -1,6 +1,6 @@
 #import "ImagePalette.h"
 
-#import "react_native_image_palette-Swift.h"
+#import <react_native_image_palette/react_native_image_palette-Swift.h>
 
 @implementation ImagePalette
 RCT_EXPORT_MODULE()
