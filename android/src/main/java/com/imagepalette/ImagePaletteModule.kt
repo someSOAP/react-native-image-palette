@@ -23,33 +23,21 @@ class ImagePaletteModule internal constructor(context: ReactApplicationContext) 
 
   private fun getHeadersFromConfig(config: ReadableMap?): MutableMap<String, String> {
     val headers = mutableMapOf<String, String>()
-    val configHeaders = config?.getMap("headers")
-
-    configHeaders?.let {
-      val iterator = it.keySetIterator()
+    config?.getMap("headers")?.let { configHeaders ->
+      val iterator = configHeaders.keySetIterator()
       while (iterator.hasNextKey()) {
         val key = iterator.nextKey()
-        when (it.getType(key)) {
-          ReadableType.String -> headers[key] = it.getString(key) ?: ""
+        when (configHeaders.getType(key)) {
+          ReadableType.String -> headers[key] = configHeaders.getString(key) ?: ""
           else -> throw IllegalArgumentException("Unsupported type")
         }
       }
     }
-
     return headers
   }
 
   private fun getPixelSpacingFromConfig(config: ReadableMap?): Int {
-    val defaultSpacing = 5
-    if(config == null) {
-      return defaultSpacing
-    }
-
-    return try {
-      config.getInt("pixelSpacingAndroid")
-    } catch (exception: Exception) {
-      defaultSpacing
-    }
+    return config?.getInt("pixelSpacingAndroid") ?: 5
   }
 
   private fun parseSegments(segments: ReadableArray): ArrayList<ImagePalette.ImageSegmentConfig> {
@@ -57,15 +45,16 @@ class ImagePaletteModule internal constructor(context: ReactApplicationContext) 
 
     for (i in 0 until segments.size()) {
       val segmentMap = segments.getMap(i)
-
-      segmentsParsed.add(
-        ImagePalette.ImageSegmentConfig(
-          fromY = segmentMap.getInt("fromY"),
-          toY = segmentMap.getInt("toY"),
-          fromX = segmentMap.getInt("fromX"),
-          toX = segmentMap.getInt("toX"),
+      segmentMap?.let {
+        segmentsParsed.add(
+          ImagePalette.ImageSegmentConfig(
+            fromY = it.getInt("fromY"),
+            toY = it.getInt("toY"),
+            fromX = it.getInt("fromX"),
+            toX = it.getInt("toX"),
+          )
         )
-      )
+      }
     }
 
     return segmentsParsed
@@ -78,21 +67,15 @@ class ImagePaletteModule internal constructor(context: ReactApplicationContext) 
 
   @ReactMethod
   override fun getPalette(uri: String, config: ReadableMap?, promise: Promise) {
-
     val headers = this.getHeadersFromConfig(config)
-
     val fallback = this.getFallbackColorFromConfig(config)
-
     imgPalette.getPalette(uri, context, fallback, headers, promise)
   }
 
   @ReactMethod
   override fun getAverageColor(uri: String, config: ReadableMap?, promise: Promise) {
-
     val headers = getHeadersFromConfig(config)
-
     val pixelSpacing = this.getPixelSpacingFromConfig(config)
-
     imgPalette.getAverageColor(uri, context, headers, pixelSpacing, promise)
   }
 
@@ -105,11 +88,8 @@ class ImagePaletteModule internal constructor(context: ReactApplicationContext) 
     promise: Promise
   ) {
     val headers = this.getHeadersFromConfig(config)
-
     val segmentsParsed = this.parseSegments(segments)
-
     val pixelSpacing = this.getPixelSpacingFromConfig(config)
-
     imgPalette.getSegmentsAverageColor(
       uri,
       context,
@@ -128,10 +108,8 @@ class ImagePaletteModule internal constructor(context: ReactApplicationContext) 
     promise: Promise
   ) {
     val headers = this.getHeadersFromConfig(config)
-
     val segmentsParsed = this.parseSegments(segments)
     val fallback = this.getFallbackColorFromConfig(config)
-
     imgPalette.getSegmentsPalette(
       uri,
       context,
