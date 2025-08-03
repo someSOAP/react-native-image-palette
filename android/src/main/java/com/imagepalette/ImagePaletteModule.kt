@@ -37,7 +37,9 @@ class ImagePaletteModule internal constructor(context: ReactApplicationContext) 
   }
 
   private fun getPixelSpacingFromConfig(config: ReadableMap?): Int {
-    return config?.getInt("pixelSpacingAndroid") ?: 5
+    return if(config !== null && config.hasKey("pixelSpacingAndroid")) {
+      config.getInt("pixelSpacingAndroid")
+    } else 5
   }
 
   private fun parseSegments(segments: ReadableArray): ArrayList<ImagePalette.ImageSegmentConfig> {
